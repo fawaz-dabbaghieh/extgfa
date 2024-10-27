@@ -1,3 +1,4 @@
+import pdb
 import networkx as nx
 from collections import defaultdict
 import logging
@@ -31,6 +32,13 @@ def gfa_to_nx(gfa_file):
     return graph
 
 
+def check_consist(chunk_sizes, graph):
+    not_consist = dict()
+    for nid, n in graph.nodes.items():
+        if n['chunk'] != 0 and n['chunk'] not in chunk_sizes:
+            not_consist[nid] = n['chunk']
+    return not_consist
+
 
 def output_csv_colors(graph, chunks, outputfile):
     """
@@ -54,17 +62,20 @@ def merge_chunk(graph, chunk_sizes, threshold):
     graph: the nx graph object
     """
     # todo I need to add a rule to stop merging with chunks that are too big
-    logger.info(f"There are {len([x for x in chunk_sizes.values() if x < threshold])} chunks to be merged")
-    while min(chunk_sizes.values()) < threshold:
-        chunk_id = int(min(chunk_sizes, key=chunk_sizes.get))
+    to_merge = set()
+    for cid, size in chunk_sizes.items():
+        if size < threshold:
+            to_merge.add(cid)
+            # to_merge[cid] = [x for x in graph if graph.nodes[x]['chunk'] == cid]
+    logger.info(f"There are {len(to_merge)} chunks to be merged")
+    # logger.info(f"There are {len([x for x in chunk_sizes.values() if x < threshold])} chunks to be merged")
+    # while min(chunk_sizes.values()) < threshold:
+    for chunk_id in to_merge:
+        # pdb.set_trace()
         chunk = [x for x in graph if graph.nodes[x]['chunk'] == chunk_id]
-        # if len(chunk) == 1:
-        #     pdb.set_trace()
-        logger.info(f"Merging chunk {chunk_id} that contains {chunk_sizes[chunk_id]} nodes")
-        # if chunk is small, I can merge it with another chunk
-        # I can just look through all the children of the nodes
-        # in this chunk and if take a majority vote on which is the most
-        # neighboring chunk and I merge the current one with that
+        if len(chunk) > threshold:
+            continue
+
         neighbor_chunk = defaultdict(int)
         # neighbor_chunk = [0] * graph.n_chunks
         # print(graph.n_chunks)
@@ -78,22 +89,18 @@ def merge_chunk(graph, chunk_sizes, threshold):
         assert 0 not in neighbor_chunk
 
         if neighbor_chunk:  # there are neighboring chunks to merge with
-            new_chunk_id = int(max(neighbor_chunk, key=neighbor_chunk.get))
+            new_chunk_id = int(max(neighbor_chunk, key=neighbor_chunk.get))  # merge with most connected neighbor
+            logger.info(f"Merging chunk {chunk_id} that contains {chunk_sizes[chunk_id]} nodes with chunk {new_chunk_id}")
+
             # logger.info(f"Merging chunk {chunk_id} with {chunk_sizes[new_chunk_id]} nodes")
             for n in chunk:
                 graph.nodes[n]['chunk'] = new_chunk_id
             chunk_sizes[new_chunk_id] += len(chunk)
 
             del chunk_sizes[chunk_id]  # removing the old chunk id entry
-        else:  # if the graph is one big connected component, it should always have neighboring chunks
+            # pdb.set_trace()
+        # no neighbors to merge with
+        else:
             pass
     logger.info(f"There are {len([x for x in chunk_sizes.values() if x < threshold])} chunks to be merged now")
 
-
-
-def debug(graph, chunk_sizes):
-    for cid, size in chunk_sizes.items():
-        try:
-            assert len([x for x in graph if graph.nodes[x]['chunk'] == cid]) == size
-        except AssertionError:
-            print(f"chunk id {cid} did not match size {size}")

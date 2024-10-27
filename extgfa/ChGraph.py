@@ -100,7 +100,9 @@ class ChGraph:
 		try:
 			return self.nodes[key]
 		except KeyError:
-			return None
+			chunk_id = self.get_node_chunk(key)
+			self.load_chunk(chunk_id)
+			return self.nodes[key]
 
 	def total_seq_length(self):
 		"""
