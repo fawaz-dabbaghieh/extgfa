@@ -10,25 +10,7 @@ need to care about how internally the class deals with loading and unloading par
     + [Graph Partitioning](#graph-partitioning)
 - [Graph Class](#graph-class)
 - [Usage and Examples](#usage-and-examples)
-
-[//]: # (  * [Installation]&#40;#installation&#41;)
-
-[//]: # (  * [Use Cases]&#40;#use-cases&#41;)
-
-[//]: # (  * [Example graph]&#40;#example-graph&#41;
-
-[//]: # (  * [Usage and Subcommands]&#40;#usage-and-subcommands&#41;)
-
-[//]: # (    + [bchains]&#40;#bchains&#41;)
-
-[//]: # (    + [chainout]&#40;#chainout&#41;)
-
-[//]: # (    + [compact]&#40;#compact&#41;)
-
-[//]: # (    + [biggestcomp]&#40;#biggestcomp&#41;)
-
-[//]: # (    + [bfs]&#40;#bfs&#41;)
-
+    + [HPRC Minigraph Chr22 Example](#hprc-minigraph-chr22-example)
 
 # Idea
 The idea here is inspired by [Minecraft](https://minecraft.fandom.com/wiki/Minecraft_Wiki).
