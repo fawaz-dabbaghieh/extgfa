@@ -6,7 +6,6 @@ This is especially useful when the user only want to look at or extract a small 
 need to care about how internally the class deals with loading and unloading parts of the graph, this is done seemliness behind the scenes.
 
 - [Idea](#idea)
-- [Implementation](#implementation)
 - [Pipeline](#pipeline)
     + [Graph Partitioning](#graph-partitioning)
 - [Graph Class](#graph-class)
