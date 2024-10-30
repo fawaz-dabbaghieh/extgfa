@@ -14,13 +14,10 @@ need to be applied after the KL algorithm is executed.
 import sys
 import pdb
 import gc
-import pickle
 import logging
-import shelve
-from extgfa.utilities import gfa_to_nx, output_csv_colors, merge_chunk
-from extgfa.Graph import Graph
+from extgfa.utilities import gfa_to_nx, output_csv_colors, merge_chunk, final_output
 import networkx as nx
-from collections import deque, defaultdict
+from collections import defaultdict
 
 
 logger = logging.getLogger(__name__)
@@ -98,16 +95,18 @@ def run_kl(graph, chunk_sizes):
     # return chunk_sizes
 
 
-def kl_main(input_gfa, output_gfa, upper, lower):
+def kl_main(input_gfa, output_gfa, top_threshold, btm_threshold):
     # chunk_counter = 1
     global CHUNK_COUNTER
     chunk_sizes = defaultdict(int)
     to_skip = dict()
     graph = gfa_to_nx(input_gfa)
+    if top_threshold > len(graph):
+        logger.error(f"The upper threshold given {top_threshold} is bigger than the graph given {input_gfa}")
+        sys.exit(1)
     logger.info(f"Created the graph from {input_gfa} which has {len(graph.nodes)} nodes")
-    # todo need to make the upper and lower threshold user changeable
-    top_threshold = len(graph) / upper
-    btm_threshold = len(graph) / lower
+    # top_threshold = len(graph) / upper
+    # btm_threshold = len(graph) / lower
     for comp in nx.components.connected_components(graph):
         logger.info(f"Got component of length {len(comp)}")
         # component is small enough to be its own chunk without further partitioning
@@ -134,11 +133,10 @@ def kl_main(input_gfa, output_gfa, upper, lower):
             logger.info(f"Now we have {len(chunk_sizes)} chunks after merging")
 
     # assert len(set(chunk_sizes.keys()).intersection(to_skip.keys())) == 0
-    final_chunks = chunk_sizes | to_skip
     chunk_index = []
     sorted_chunks = dict()
     counter = 0
-    for cid, size in final_chunks.items():
+    for cid, size in chunk_sizes.items():
         sorted_chunks[cid] = counter
         chunk_index.append([])
         counter += 1
@@ -150,36 +148,13 @@ def kl_main(input_gfa, output_gfa, upper, lower):
     #     assert len(chunk_index[-1]) == final_chunks[c]
 
     logger.info(f"Outputting the CSV file")
-    output_csv_colors(graph, final_chunks, output_gfa)
+    output_csv_colors(graph, chunk_sizes, output_gfa + ".csv")
 
     del graph
     del new_graph
     gc.collect()
 
-    # now I have the chunk index, I reload the graph with my class, assign the chunk ids and then output a new
-    # graph and the offset index
-    logger.info(f"Reloading the GFA with all the information now and assigning the node chunks")
-    graph = Graph(input_gfa)
-    for idx, chunk in enumerate(chunk_index):
-        for n in chunk:
-            graph.nodes[n].chunk_id = idx + 1
-    n_chunks = len(chunk_index)
-    # del chunk_index
-
-    logger.info(f"Creating the node_id:chunk_id DB")
-    outshelve = shelve.open(output_gfa + ".db")
-    for n in graph.nodes.keys():
-        outshelve[n] = graph[n].chunk_id
-    logger.info(f"Shelving the db to {output_gfa}.db")
-    outshelve.close()
-
-    logger.info(f"outputting the chunked GFA into {output_gfa}")
-    print(f"chunk index is of length {len(chunk_index)}")
-    graph.write_chunked_gfa(chunk_index, output_gfa)
-
-    logger.info(f"outputting the chunked GFA offsets into {output_gfa}.index")
-    outindex = open(output_gfa + ".index", "wb")
-    pickle.dump(graph.chunk_offsets, outindex)
+    final_output(chunk_index, input_gfa, output_gfa)
 
 
 if __name__ == "__main__":

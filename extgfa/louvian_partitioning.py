@@ -1,5 +1,6 @@
 import time
 import gc
+import sys
 import logging
 from extgfa.utilities import gfa_to_nx, output_csv_colors, merge_chunk, split_chunk, final_output
 import networkx as nx
@@ -28,16 +29,18 @@ def run_lv(graph, chunk_sizes):
         CHUNK_COUNTER += 1
 
 
-def lv_main(input_gfa, output_gfa, upper, lower):
+def lv_main(input_gfa, output_gfa, top_threshold, btm_threshold):
     global CHUNK_COUNTER
     # chunk_counter = 1
     chunk_sizes = dict()
     # to_skip = dict()
     graph = gfa_to_nx(input_gfa)
     logger.info(f"Created the graph from {input_gfa} which has {len(graph.nodes)} nodes")
-
-    top_threshold = len(graph) / upper
-    btm_threshold = len(graph) / lower
+    if top_threshold > len(graph):
+        logger.error(f"The upper threshold given {top_threshold} is bigger than the graph given {input_gfa}")
+        sys.exit(1)
+    # top_threshold = len(graph) / upper
+    # btm_threshold = len(graph) / lower
 
     for comp in nx.components.connected_components(graph):
         logger.info(f"Got component of length {len(comp)}")
@@ -80,7 +83,7 @@ def lv_main(input_gfa, output_gfa, upper, lower):
         chunk_index[sorted_chunks[cid]].append(n)
 
     logger.info(f"Outputting the CSV file")
-    output_csv_colors(graph, chunk_sizes, output_gfa)
+    output_csv_colors(graph, chunk_sizes, output_gfa + ".csv")
 
     del graph
     del new_graph

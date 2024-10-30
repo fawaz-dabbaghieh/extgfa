@@ -33,8 +33,8 @@ def main():
 
     try:
         upper, lower = int(sys.argv[4]), int(sys.argv[5])
-        if upper > lower:
-            print(f"The upper threshold has to be smaller than lower (n_nodes/threshold)")
+        if lower > upper:
+            print(f"the lower threshold cannot be bigger than the upper threshold")
             sys.exit()
 
     except ValueError:

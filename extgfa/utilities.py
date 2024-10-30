@@ -171,7 +171,7 @@ def final_output(chunk_index, input_gfa, output_gfa):
     outshelve.close()
 
     logger.info(f"outputting the chunked GFA into {output_gfa}")
-    graph.write_chunked_gfa(chunk_index, output_gfa)
+    graph.write_chunked_gfa(chunk_index, output_gfa + ".gfa")
 
     logger.info(f"outputting the chunked GFA offsets into {output_gfa}.index")
     outindex = open(output_gfa + ".index", "wb")
