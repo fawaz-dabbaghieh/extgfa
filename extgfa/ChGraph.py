@@ -24,6 +24,9 @@ class Node:
 		self.tags = dict()
 		self.optional_info = []
 
+	def __len__(self):
+		return len(self.seq)
+
 	def to_gfa_line(self, with_seq=True):
 		"""
 		returns the GFA S line for the node
@@ -49,22 +52,26 @@ class ChGraph:
 
 	def __init__(self, graph_file):
 		# check for index and db
+		if not graph_file.endswith(".gfa"):
+			print("the graph needs to end with .gfa")
+			sys.exit(1)
+
 		if not os.path.exists(graph_file):
 			print(f"graph file {graph_file} does not exist")
 			sys.exit(1)
 
-		if not os.path.exists(graph_file + ".db"):
+		if not os.path.exists(graph_file[:-4] + ".db"):
 			logger.error(f"Could not find DB associated with {graph_file}\nMake sure this is the chunked graph")
 			sys.exit(1)
 
-		if not os.path.exists(graph_file + ".index"):
+		if not os.path.exists(graph_file[:-4] + ".index"):
 			logger.error(f"Could not find the offsets index associated with {graph_file}\nMake sure this is the chunked graph")
 			sys.exit(1)
 
-		with open(graph_file + ".index", "rb") as f:
+		with open(graph_file[:-4] + ".index", "rb") as f:
 			self.offsets = pickle.load(f)
 
-		self.node_chunks = graph_file + ".db"
+		self.node_chunks = graph_file[:-4] + ".db"
 
 		self.nodes = dict()
 		self.graph_name = graph_file
@@ -76,16 +83,15 @@ class ChGraph:
 		"""
 		overloading the length function
 		"""
-
 		return len(self.nodes)
 
 	def __str__(self):
 		"""
 		overloading the string function for printing
 		"""
+		total_len = sum([len(x) for x in self.nodes.values()])
+		return f"The graph has {len(self.nodes)} nodes, and total seq length of {total_len}"
 
-		return "The graph has {} Nodes and {} chains".format(
-			len(self.nodes), len(self.b_chains))
 
 	def __contains__(self, key):
 		"""
@@ -101,6 +107,8 @@ class ChGraph:
 			return self.nodes[key]
 		except KeyError:
 			chunk_id = self.get_node_chunk(key)
+			if chunk_id is None:
+				return None
 			self.load_chunk(chunk_id)
 			return self.nodes[key]
 
@@ -137,8 +145,11 @@ class ChGraph:
 		else:
 			with shelve.open(self.node_chunks) as node_chunk:
 			# node_chunk = shelve.open(self.node_chunks)
-				chunk_id = node_chunk[node_id]
-				node_chunk.close()
+				try:
+					chunk_id = node_chunk[node_id]
+				except KeyError:
+					return None
+				# node_chunk.close()
 				return chunk_id
 
 	def neighbors(self, node_id):

@@ -15,7 +15,7 @@ need to care about how internally the class deals with loading and unloading par
 
 [//]: # (  * [Use Cases]&#40;#use-cases&#41;)
 
-[//]: # (  * [Example graph]&#40;#example-graph&#41;)
+[//]: # (  * [Example graph]&#40;#example-graph&#41;
 
 [//]: # (  * [Usage and Subcommands]&#40;#usage-and-subcommands&#41;)
 
@@ -65,7 +65,7 @@ In order to do that, we have two steps: cutting the graph into chunks and output
 ## Graph Partitioning
 There are many graph algorithms that cut the graph into smaller parts, or find connected neighborhoods. We tested three
 algorithms implemented in the `NetworkX` library, the Kernighan-Lin algorithm, edge betweenness partition, Louvian communities,
-and Clauset-Newman-moore greedy modularity maximization algorithm.
+and Clauset-Newman-Moore greedy modularity maximization algorithm.
 
 At the moment, the user can choose between Kernighan-Lin, Louvian communities, or Clauset-Newman-Moore algorithm for partitioning
 the graph into chunks. However, after testing a couple of graphs, we found that Clauset-Newman-Moore algorithm works best,
@@ -95,6 +95,13 @@ So, **extgfa** takes a GFA graph as an input and produces three files: reordered
     <img src="figures/distgfa_pipeline_v3.png" alt="drawing" width="800"/>
 </p>
 
+# Installation
+**extgfa** is a simple python package and can be installed with `python3 setup.py install` or from the package directory running
+`pip install .`.
+
+Once installed, it can be used a command line tool for creating the chunked graph,
+or the user can simply import `from extgfa.Graph import Graph` or `from extgfa.ChGraph import ChGraph`, 
+import and use the graph classes implemented.
 
 # Graph Class
 Two GFA graph classes are implemented in **extgfa**, both can be imported and used in your own scripts. One is called `extgfa.Graph`,
@@ -107,3 +114,28 @@ have to manage any memory themselves.
 For examples on how to use these classes, please take a look at the next section.
 
 # Usage and Examples
+To generate the index for a GFA file, **extgfa** can be simply called from the command line after installation.
+First, you need to choose which algorithm to use for chunking, there are 3 options
+1. `lv` for Louvian communities Algorithm
+2. `gm` for Clauset-Newman-Moore Algorithm
+3. `kl` for Kernighal-Lin algorithm
+
+Then you need to give the input GFA file, the name of the output GFA file and the upper and lower thresholds.
+The thresholds are integer.
+
+## HPRC Minigraph Chr22 Example
+The following code snippet uses the graph in the example directory in this repo. This graph represent Chr22 from the 
+[HPRC minigraph](https://github.com/human-pangenomics/hpp_pangenome_resources).
+
+```
+$ extgfa gm chm13-90c-chr22.gfa chm13-90c-chr22_chunked_gm.gfa 300 30
+```
+This means that **extgfa** will run `gm` algorithm on the input graph and a chunk can be at most 300 nodes big,
+and minimum 30 nodes, if less than 30 nodes, it will be merged with neighboring chunks, if bigger than 300 nodes, it will be split further.
+
+This will produce 4 files:
+1. `chm13-90c-chr22-chunked_gm.csv` which is a Bandage compatible CSV file with colors for the different chunks for visualization
+2. `chm13-90c-chr22-chunked_gm.db` which is the node_id:chunk_id database
+3. `chm13-90c-chr22-chunked_gm.index` which is the pickled chunk_id:(offset, n_lines)
+4. `chm13-90c-chr22-chunked_gm.gfa` is the new reordered GFA file
+
