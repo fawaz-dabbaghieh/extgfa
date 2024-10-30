@@ -1,7 +1,10 @@
-import pdb
+import sys
+import pickle
+import logging
+import shelve
+from extgfa.Graph import Graph
 import networkx as nx
 from collections import defaultdict
-import logging
 
 
 logger = logging.getLogger(__name__)
@@ -104,3 +107,72 @@ def merge_chunk(graph, chunk_sizes, threshold):
             pass
     logger.info(f"There are {len([x for x in chunk_sizes.values() if x < threshold])} chunks to be merged now")
 
+
+def split_chunk(graph, chunk_sizes, top_threshold, CHUNK_COUNTER, algo):
+    """
+    When a chunk is too big, gets split again using lv algorithm
+    original_graph: the nx graph object
+    chunk_sizes: a dictionary of chunk_id:chunk_size
+    threshold: threshold for biggest components
+    """
+    # I think to do it faster, I can take the components that come out of kl algorithm
+    # and merge those together, but for now, I'll just collect them all and do the merging later
+    if algo == "lv":
+        algorithm = nx.community.louvain_communities
+    elif algo == "gm":
+        algorithm = nx.community.greedy_modularity_communities
+    else:
+        print("You need to give either lv or gm to split_chunk function")
+        sys.exit()
+
+    # global CHUNK_COUNTER
+    to_split = dict()
+    for cid, size in chunk_sizes.items():
+        if size > top_threshold:
+            to_split[cid] = [x for x in graph if graph.nodes[x]['chunk'] == cid]
+
+    logger.info(f"There are {len(to_split)} chunks to be split")
+
+    for chunk_id, chunk in to_split.items():
+
+        new_graph = graph.subgraph(chunk)
+        logger.info(f"Running Louvian communities algorithm on biggest chunk of length {len(new_graph)}")
+        partitions = algorithm(new_graph)
+
+        # for idx, comp in enumerate(partitions):
+        for comp in partitions:
+            for n in comp:
+                # new_graph.nodes[n]['chunk'] = idx + 1 + max_chunk_id
+                new_graph.nodes[n]['chunk'] = CHUNK_COUNTER
+            chunk_sizes[CHUNK_COUNTER] = len(comp)
+
+            CHUNK_COUNTER += 1
+        del chunk_sizes[chunk_id]
+    return CHUNK_COUNTER
+
+
+def final_output(chunk_index, input_gfa, output_gfa):
+    # now I have the chunk index, I reload the graph with my class, assign the chunk ids and then output a new
+    # graph and the offset index
+    logger.info(f"Reloading the GFA with all the information now and assigning the node chunks")
+    graph = Graph(input_gfa)
+    for idx, chunk in enumerate(chunk_index):
+        for n in chunk:
+            graph.nodes[n].chunk_id = idx + 1
+    n_chunks = len(chunk_index)
+    logger.info(f"There are {n_chunks} chunks")
+    # del chunk_index
+
+    logger.info(f"Creating the node_id:chunk_id DB")
+    outshelve = shelve.open(output_gfa + ".db")
+    for n in graph.nodes.keys():
+        outshelve[n] = graph[n].chunk_id
+    logger.info(f"Shelving the db to {output_gfa}.db")
+    outshelve.close()
+
+    logger.info(f"outputting the chunked GFA into {output_gfa}")
+    graph.write_chunked_gfa(chunk_index, output_gfa)
+
+    logger.info(f"outputting the chunked GFA offsets into {output_gfa}.index")
+    outindex = open(output_gfa + ".index", "wb")
+    pickle.dump(graph.chunk_offsets, outindex)
