@@ -11,7 +11,7 @@ need to care about how internally the class deals with loading and unloading par
 - [Usage and Examples](#usage-and-examples)
     + [HPRC Minigraph Chr22 Example](#hprc-minigraph-chr22-example)
     + [Working with Graph Classes](#working-with-graph-classes)
-      + [Example Algorithm using ChGraph Class](#working-with-graph-classes)
+      + [Example Algorithm using ChGraph Class](#example-algorithm-using-chgraph-class)
 
 # Idea
 The idea here is inspired by [Minecraft](https://minecraft.fandom.com/wiki/Minecraft_Wiki).
