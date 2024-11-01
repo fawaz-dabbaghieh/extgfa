@@ -27,6 +27,10 @@ def main():
         print(f"input file {sys.argv[2]} does not exist")
         sys.exit()
 
+    if sys.argv[2].endswith(".gz"):
+        print("You need to provide an uncompressed GFA file")
+        sys.exit()
+
     if os.path.exists(sys.argv[3]):
         print(f"The file given for output {sys.argv[3]} already exists")
         sys.exit()

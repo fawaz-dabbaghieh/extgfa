@@ -162,3 +162,12 @@ cython_debug/
 .idea/
 pyvenv/
 test_data/
+
+
+chm13-90c-chr22_chunked_lv.csv
+chm13-90c-chr22_chunked_lv.db
+chm13-90c-chr22_chunked_lv.gfa
+chm13-90c-chr22_chunked_lv.index
+chm13-90c-chr22.gfa
+test_subgraph.gfa
+

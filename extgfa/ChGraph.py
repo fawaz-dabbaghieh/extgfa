@@ -249,7 +249,7 @@ class ChGraph:
 		if not output_file.endswith(".gfa"):
 			output_file += ".gfa"
 
-		write_gfa(self, set_of_nodes=set_of_nodes, output_file=output_file,
+		self.write_gfa(set_of_nodes=set_of_nodes, output_file=output_file,
 				  append=append, optional_info=optional_info)
 
 
