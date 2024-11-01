@@ -225,6 +225,7 @@ def dfs(graph, start, cutoff):
             for neighbor in graph.neighbors(node):
                 if neighbor not in visited:
                     stack.append(neighbor)
+    return visited
 
 # we load the chunked graph
 graph = ChGraph("chm13-90c-chr22-chunked_gm.gfa")
