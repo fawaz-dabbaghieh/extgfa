@@ -1,12 +1,12 @@
 import sys
 import os
-import pickle
-import pdb
+import re
 import logging
 import shelve
 import pickle
 from collections import deque
 from extgfa.bfs import bfs
+import extgfa.utilities
 
 
 logger = logging.getLogger(__name__)
@@ -53,11 +53,11 @@ class ChGraph:
 	def __init__(self, graph_file):
 		# check for index and db
 		if not graph_file.endswith(".gfa"):
-			print("the graph needs to end with .gfa")
+			logging.error("the graph needs to end with .gfa")
 			sys.exit(1)
 
 		if not os.path.exists(graph_file):
-			print(f"graph file {graph_file} does not exist")
+			logging.error(f"graph file {graph_file} does not exist")
 			sys.exit(1)
 
 		if not os.path.exists(graph_file[:-4] + ".db"):
@@ -494,3 +494,68 @@ class ChGraph:
 			# 	f.write(e)
 
 		f.close()
+
+	def path_exists(self, path):
+		"""
+        Just a check that a path given exists in the graph
+        I am assuming that the list of node given as ordered_path taken from the GAF alignment is ordered
+        i.e., node 1 parent of node 2, node 2 parent of node 3 and so on
+        """
+
+		ordered_path = re.findall("[><][^><]+", path)
+		cases = {
+			(">", ">"): ("end", 0),
+			("<", "<"): ("start", 1),
+			(">", "<"): ("end", 1),
+			("<", ">"): ("start", 0),
+		}
+
+		for i in range(1, len(ordered_path)):
+			n1 = ordered_path[i - 1]
+			n2 = ordered_path[i]
+			try:
+				case = cases[(n1[0], n2[0])]
+			except KeyError:
+				logging.error(
+					"Something went wrong when checking the path, make sure the path follows this example"
+					">node<node>node<nod"
+				)
+				return False
+			ok = False
+			for edge in getattr(self[n1[1:]], case[0]):
+				if (n2[1:], case[1]) == (edge[0], edge[1]):
+					ok = True
+			if not ok:
+				return False
+
+		return True
+
+	def extract_path_seq(self, path):
+		"""
+        returns the sequences representing that path
+        """
+		seq = []
+		# path has to start with > or <, otherwise it's invalid
+		if path[0] not in {"<", ">"}:
+			logging.error(f"The path {path} does not start with < or > ")
+			return ""
+
+		if not self.path_exists(path):
+			logging.error(f"The path given {path} does not exist")
+			return ""
+		path = re.findall("[><][^><]+", path)
+
+		for n in path:
+			if n[1:] not in self:
+				logging.error(f"The node {n[1:]} in path {path} does not seem to exist in this GFA")
+				return ""
+			# print(n)
+			if n.startswith(">"):
+				seq.append(self[n[1:]].seq)
+			elif n.startswith("<"):
+				seq.append(extgfa.utilities.rev_comp(self[n[1:]].seq))
+			# seq.append("".join([reverse_complement[x] for x in self.nodes[n[1:]].seq[::-1]]))
+			else:
+				logging.error(f"Some error happened where a node {n} doesn't start with > or <")
+				return ""
+		return "".join(seq)

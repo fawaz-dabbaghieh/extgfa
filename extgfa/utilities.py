@@ -9,6 +9,8 @@ from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+complement = str.maketrans("ACGTN", "TGCAN")
+
 
 def gfa_to_nx(gfa_file):
     """
@@ -176,3 +178,6 @@ def final_output(chunk_index, input_gfa, output_gfa):
     logger.info(f"outputting the chunked GFA offsets into {output_gfa}.index")
     outindex = open(output_gfa + ".index", "wb")
     pickle.dump(graph.chunk_offsets, outindex)
+
+def rev_comp(seq):
+    return seq[::-1].translate(complement)

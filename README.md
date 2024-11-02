@@ -249,3 +249,23 @@ graph = ChGraph("chm13-90c-chr22-chunked_gm.gfa")
 dfs_list = dfs(graph, "s578029", 100)
 
 ```
+
+### Extracting GFA Paths
+The user can also use `check_path` and `extract_path_seq` of the classes to check if a certain path exists,
+and extract the sequence of the path.
+The following code snippet shows this:
+
+```python
+from extgfa.ChGraph import ChGraph
+
+graph = ChGraph("chm13-90c-chr22-chunked_gm.gfa")
+
+path = ">s588888>s288175>s656033"
+
+# this returns the sequence of the path as a string
+path_seq = graph.extract_path_seq(path)
+
+```
+
+**NOTE**: This only works for paths without overlaps, so it will concatenate the sequences of the nodes in the path
+with respect to their directions, but will not take the overlap into consideration for now.
