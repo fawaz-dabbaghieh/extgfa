@@ -133,7 +133,7 @@ Smaller chunks will be merged with neighboring ones,
 and bigger chunks will be split further.
 
 This will produce 4 files:
-1. `chm13-90c-chr22-chunked_gm.csv`, a [Bandage](https://rrwick.github.io/Bandage/) compatible CSV file with colors for the different chunks, for visualization
+1. `chm13-90c-chr22-chunked_gm.csv`, a [Bandage](https://rrwick.github.io/Bandage/) compatible CSV file with colors for the different chunks, for visualization. Please note that there is a limited number of colors, therefore, different chunks might be colored the same if there are many chunks, but this CSV can still help visualizing small graphs with few chunks.
 2. `chm13-90c-chr22-chunked_gm.db`, the `node_id:chunk_id` database
 3. `chm13-90c-chr22-chunked_gm.index`, the pickled `chunk_id:(offset, n_lines)`
 4. `chm13-90c-chr22-chunked_gm.gfa`, the new reordered GFA file
@@ -167,9 +167,7 @@ graph.write_gfa(set_of_nodes=subgraph, output_file="test_subgraph.gfa", append=F
 ```
 
 **PLEASE NOTE** that the reordered GFA and indexes are **immutable**.
-In other words, the `ChGraph` does not explicitly disallow modifications,
-but any operations such as removing edges, nodes, sequences, etc. will
-invalidate the indexes. A new GFA file must be output instead.
+In other words, the `ChGraph` does not explicitly disallow modifications to the graph object loaded in Python. However, any modifications will not be written to the index files and the reordered GFA file. You can then use the `write_gfa` function to output the graph after modification if needed. Make sure to not edit the index files or the output GFA file manually to not invalidate the offsets.
 
 ## Working with the Graph classes
 The following code showcases the classes' API which enables the user
