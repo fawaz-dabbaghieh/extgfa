@@ -1,4 +1,4 @@
-**extgfa* is a proof-of-concept implementation of an external-memory [GFA](https://gfa-spec.github.io/GFA-spec/GFA1.html)
+**extgfa** is a proof-of-concept implementation of an external-memory [GFA](https://gfa-spec.github.io/GFA-spec/GFA1.html)
 representation.
 It provides both some sort of index, and a graph class using it
 to only load smaller parts of the graph at a time
