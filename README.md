@@ -32,7 +32,7 @@ where only some resources are loaded: for example, textures are loaded for both 
 but animal characters are only loaded in the yellow level closer to the player.
 
 <p align="center">
-    <img src="figures/minecraft_map_chunks.png" alt="drawing" width="300"/>
+    <img src="figures/my_game_map.png" alt="drawing" width="300"/>
 </p>
 
 In the genome graph world,
