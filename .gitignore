@@ -6,6 +6,8 @@ example/
 # C extensions
 *.so
 
+cmake-build-debug
+example_files/
 # Distribution / packaging
 .Python
 build/

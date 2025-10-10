@@ -1,0 +1,14 @@
+So it seems that it's ok if I just keep a dictionary that maps the node id to an integer value in memory, for a 100 million nodes it's about 5 Gb in Python and same in c++ if I'm using unordered hash map
+when I used the flat version from abseil, seems to also take the same size of the key is a string, but if the key is a fixed_size array, then it reduces the memory by half. To try:
+- maybe a fixed size of 20 and see how that performs
+- use an sqlite database, that can also help in other tasks, but might be an overkill
+- just keep it as a flat hash map
+
+I also need to compare the speed of retrieving items from the different versions (python, unordered_map, flat map, and sqlite), but I think I should just abandon python, because the c++ version was much faster in building a random map anyway.
+
+Once this is done, then I can now test the parallelized luvian communities to see if the communities I'm getting are connected.
+
+Once that is done, then I need to start rearranging the file, one way to do this is by scanning the GFA file and use the dictionary to tell me to which chunk the node or edge belong and put that in separate files (tmps) then merge everything, of course need to keep track of size and number of lines to build the chunk index.
+
+once this is all done, then time to work on the library.
+
