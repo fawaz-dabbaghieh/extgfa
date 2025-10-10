@@ -48,9 +48,11 @@ def main():
     output_gfa = sys.argv[3].replace(".gfa", "")
     args = [sys.argv[2], output_gfa, upper, lower]
     if sys.argv[1] == 'gm':
+        print("running greedy modularity algorithm")
         gm_main(*args)
 
     if sys.argv[1] == "kl":
+        print("running kernighan-lin algorithm")
         kl_main(*args)
 
     if sys.argv[1] == "lv":
