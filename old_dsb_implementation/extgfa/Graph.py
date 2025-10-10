@@ -240,6 +240,81 @@ class Graph:
     def bfs(self, start_node, size):
         return bfs(self, start_node, size)
 
+
+    def write_gfa(self, set_of_nodes=None,
+                  output_file="output_file.gfa", append=False, optional_info=False):
+        """
+        Write a gfa out
+
+        :param graph: the graph object
+        :param set_of_nodes: A list of node ids of the path or nodes we want to generate a GFA file for.
+        :param output_file: path to output file
+        :param append: if I want to append to a file instead of rewriting it
+        :param optional_info: If set to True, all optional columns for S lines are outputted as well
+        :return: writes a gfa file
+        """
+
+        nodes = self.nodes
+
+        if set_of_nodes is None:
+            set_of_nodes = self.nodes.keys()
+
+        if append is False:
+            f = open(output_file, "w+")
+        else:
+            if os.path.exists(output_file):
+                f = open(output_file, "a")
+            else:
+                logging.warning("Trying to append to a non-existent file\n"
+                                "creating an output file")
+                f = open(output_file, "w+")
+
+        for n1 in set_of_nodes:
+            if n1 not in nodes:
+                logging.warning("Node {} does not exist in the graph, skipped in output".format(n1))
+                continue
+
+            line = str("\t".join(("S", str(n1), nodes[n1].seq, "LN:i:" + str(nodes[n1].seq_len))))
+            if optional_info:
+                line += "\t" + nodes[n1].optional_info
+
+            f.write(line + "\n")
+
+            # writing edges
+            edges = []
+            # overlap = str(graph.k - 1) + "M\n"
+
+            for n in nodes[n1].start:
+                overlap = str(n[2]) + "M\n"
+                # I am checking if the are nodes I want to write
+                # I think I can remove this later as I implemented the .remove_node
+                # to the Graph class that safely removes a node and all its edges
+                # So there shouldn't be any edges to removed
+                if n[0] in set_of_nodes:
+                    if n[1] == 0:
+                        edge = str("\t".join(("L", str(n1), "-", str(n[0]), "+", overlap)))
+                        edges.append(edge)
+                    else:
+                        edge = str("\t".join(("L", str(n1), "-", str(n[0]), "-", overlap)))
+                        edges.append(edge)
+
+            for n in nodes[n1].end:
+                overlap = str(n[2]) + "M\n"
+
+                if n[0] in set_of_nodes:
+                    if n[1] == 0:
+                        edge = str("\t".join(("L", str(n1), "+", str(n[0]), "+", overlap)))
+                        edges.append(edge)
+                    else:
+                        edge = str("\t".join(("L", str(n1), "+", str(n[0]), "-", overlap)))
+                        edges.append(edge)
+
+            for e in edges:
+                f.write(e)
+
+        f.close()
+
+
     def write_chunked_gfa(self, chunks, output_file="output_file.gfa"):
         """
         Write a gfa out

@@ -15,7 +15,8 @@ import sys
 import pdb
 import gc
 import logging
-from extgfa.utilities import gfa_to_nx, output_csv_colors, merge_chunk, final_output
+from extgfa.utilities import gfa_to_nx, output_csv_colors, merge_chunk
+from final_output import final_output
 import networkx as nx
 from collections import defaultdict
 
