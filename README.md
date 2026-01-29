@@ -1,3 +1,5 @@
+**NOTE:** This was a prototype and a new version of the same concept can be found here [gfaidx](https://github.com/fawaz-dabbaghieh/gfaidx). Gfaidx is implemented in c++ and is able to index very big graphs efficiently. This repo is no longer in development.
+
 **extgfa** is a proof-of-concept implementation of an external-memory [GFA](https://gfa-spec.github.io/GFA-spec/GFA1.html)
 representation.
 It provides both some sort of index, and a graph class using it
