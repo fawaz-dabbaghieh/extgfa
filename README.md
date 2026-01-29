@@ -3,6 +3,7 @@
 ##############################
 
 ##############################
+
 **NOTE:** This was a prototype and a new version of the same concept can be found here [gfaidx](https://github.com/fawaz-dabbaghieh/gfaidx). Gfaidx is implemented in c++ and is able to index very big graphs efficiently. This repo is no longer in development.
 
 ##############################
